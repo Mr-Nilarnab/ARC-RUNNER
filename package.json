@@ -1,0 +1,13 @@
+{
+    "name": "arc-runner",
+    "version": "1.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "bun --watch ./index.html",
+        "build": "bun run --sequential preBuild postBuild",
+        "preBuild": "bun build ./index.html --production --target=browser --compile --outdir=./dist",
+        "postBuild": "bunx html-minifier-terser --collapse-whitespace --remove-comments --remove-redundant-attributes --remove-script-type-attributes --remove-style-link-type-attributes --use-short-doctype -o ./dist/index.html ./dist/index.html",
+        "preview": "bun run ./dist/index.html"
+    }
+}

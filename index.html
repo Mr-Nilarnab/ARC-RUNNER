@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Arc Runner</title>
+        <link rel="stylesheet" href="./src/css/style.css" />
+    </head>
+    <body>
+        <main class="app-frame">
+            <!-- HUD TOP -->
+            <header class="hud hud__top" id="hudTop">
+                <h1 class="hud__title">
+                    Arc<span class="hud__title-accent">Runner</span>
+                </h1>
+                <div class="hud__stats">
+                    <div class="hud__stat hud__stat--game-only">
+                        <span class="hud__stat-label">DIST</span>
+                        <span id="score" class="hud__stat-value">00000</span>
+                    </div>
+                    <div class="hud__stat hud__stat--game-only">
+                        <span class="hud__stat-label">BEST</span>
+                        <span id="best" class="hud__stat-value">00000</span>
+                    </div>
+                    <div class="hud__stat hud__stat--game-only">
+                        <span class="hud__stat-label">SPD</span>
+                        <span id="speedout" class="hud__stat-value">1.0x</span>
+                    </div>
+                    <button
+                        type="button"
+                        class="hud__stat hud__stat--audio-toggle"
+                        id="muteBtn"
+                        aria-label="Toggle Audio"
+                    >
+                        <span class="hud__stat-label">AUDIO</span>
+                        <span id="muteVal" class="hud__stat-value">ON</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- VIEWPORT -->
+            <section class="viewport" id="viewport" aria-label="Game Viewport">
+                <div
+                    class="viewport__corner viewport__corner--top-left"
+                    aria-hidden="true"
+                ></div>
+                <div
+                    class="viewport__corner viewport__corner--top-right"
+                    aria-hidden="true"
+                ></div>
+                <div
+                    class="viewport__corner viewport__corner--bottom-left"
+                    aria-hidden="true"
+                ></div>
+                <div
+                    class="viewport__corner viewport__corner--bottom-right"
+                    aria-hidden="true"
+                ></div>
+                <div class="viewport__scanline" aria-hidden="true"></div>
+                <div class="viewport__crt-raster" aria-hidden="true"></div>
+                <div
+                    class="viewport__hit-flash"
+                    id="hitFlash"
+                    aria-hidden="true"
+                ></div>
+
+                <!-- BOOT SCREEN -->
+                <div
+                    id="screenBoot"
+                    class="screen screen--boot boot-screen"
+                    role="region"
+                    aria-label="System Boot Screen"
+                >
+                    <div
+                        class="boot-screen__log"
+                        id="bootLog"
+                        aria-live="polite"
+                        aria-atomic="false"
+                    ></div>
+                    <div
+                        class="boot-screen__progress"
+                        role="progressbar"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        aria-valuenow="0"
+                    >
+                        <div class="boot-screen__bar">
+                            <div
+                                class="boot-screen__bar-fill"
+                                id="bootBarFill"
+                            ></div>
+                        </div>
+                        <div class="boot-screen__pct" id="bootPct">0%</div>
+                    </div>
+                    <div class="boot-screen__skip">
+                        PRESS ANY KEY OR TAP TO SKIP
+                    </div>
+                    <div class="boot-screen__credit">
+                        CREATED BY MR. NILARNAB &nbsp;·&nbsp; GITHUB
+                    </div>
+                </div>
+
+                <!-- MENU SCREEN -->
+                <div
+                    id="screenMenu"
+                    class="screen screen--menu menu-screen"
+                    role="region"
+                    aria-label="Main Menu"
+                >
+                    <div class="menu-screen__glyph" aria-hidden="true">⬡</div>
+                    <h2 class="menu-screen__title">
+                        Arc<span class="menu-screen__title-accent">Runner</span>
+                    </h2>
+                    <p class="menu-screen__tag">CORE EVASION PROTOCOL</p>
+                    <div class="menu-screen__buttons">
+                        <button
+                            type="button"
+                            id="playBtn"
+                            class="btn btn--primary menu-screen__btn"
+                        >
+                            PLAY
+                        </button>
+                        <button
+                            type="button"
+                            id="exitBtn"
+                            class="btn menu-screen__btn"
+                        >
+                            EXIT
+                        </button>
+                    </div>
+                    <p class="menu-screen__footer">
+                        SPACE/↑ JUMP &nbsp;·&nbsp; ↓ DUCK &nbsp;·&nbsp; P PAUSE
+                    </p>
+                </div>
+
+                <!-- EXIT SCREEN -->
+                <div
+                    id="screenExit"
+                    class="screen screen--exit exit-screen"
+                    role="region"
+                    aria-label="Connection Terminated Screen"
+                >
+                    <div class="exit-screen__glyph" aria-hidden="true">⏻</div>
+                    <h2 class="exit-screen__title">CONNECTION TERMINATED</h2>
+                    <p class="exit-screen__desc">
+                        Unit powered down. You can close this tab now, or bring
+                        it back online below.
+                    </p>
+                    <button
+                        type="button"
+                        id="reinitBtn"
+                        class="btn exit-screen__btn"
+                    >
+                        REINITIALIZE
+                    </button>
+                </div>
+
+                <!-- GAME SCREEN -->
+                <div
+                    id="screenGame"
+                    class="screen screen--game game-screen"
+                    role="region"
+                    aria-label="Active Game Screen"
+                >
+                    <canvas
+                        id="game"
+                        class="viewport__canvas"
+                        width="900"
+                        height="300"
+                        aria-label="Arc Runner Game Canvas"
+                    ></canvas>
+
+                    <!-- READY / GAME OVER OVERLAY -->
+                    <div
+                        class="overlay game-screen__overlay"
+                        id="overlay"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="overlayTitle"
+                        aria-describedby="overlayDesc"
+                    >
+                        <div class="overlay__inner">
+                            <div
+                                class="overlay__glyph"
+                                id="overlayGlyph"
+                                aria-hidden="true"
+                            >
+                                ⬡
+                            </div>
+                            <h2 id="overlayTitle" class="overlay__title">
+                                UNIT READY
+                            </h2>
+                            <p id="overlayDesc" class="overlay__desc">
+                                Arc-core evasion unit online. Clear the hazard
+                                grid — jump the stacks, duck the drones.
+                            </p>
+                            <p class="overlay__hint">
+                                [SPACE / ↑] JUMP &nbsp;&nbsp; [↓] DUCK
+                            </p>
+                            <div class="overlay__actions">
+                                <button
+                                    type="button"
+                                    id="primaryBtn"
+                                    class="btn btn--primary overlay__btn"
+                                >
+                                    ENGAGE
+                                </button>
+                                <button
+                                    type="button"
+                                    id="overlayMenuBtn"
+                                    class="btn overlay__btn"
+                                >
+                                    MAIN MENU
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PAUSE OVERLAY -->
+                    <div
+                        class="overlay overlay--pause game-screen__overlay overlay--hidden"
+                        id="pauseOverlay"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Pause Menu"
+                        aria-hidden="true"
+                    >
+                        <div class="overlay__inner">
+                            <div class="overlay__glyph" aria-hidden="true">
+                                Ⅱ
+                            </div>
+                            <h2 class="overlay__title">PAUSED</h2>
+                            <p class="overlay__hint">
+                                [P] RESUME &nbsp;&nbsp; [ESC] MAIN MENU
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HUD BOTTOM / TOUCH CONTROLS -->
+            <footer class="hud hud__bottom" id="hudBottom">
+                <div class="hud__controls-hint">
+                    SPACE / ↑ — JUMP &nbsp;·&nbsp; ↓ — DUCK &nbsp;·&nbsp; P —
+                    PAUSE &nbsp;·&nbsp; R — RESTART
+                </div>
+                <div class="hud__touch-controls">
+                    <button
+                        type="button"
+                        id="duckBtn"
+                        class="btn btn--touch hud__touch-btn hud__touch-btn--duck"
+                    >
+                        ▼ DUCK
+                    </button>
+                    <button
+                        type="button"
+                        id="jumpBtn"
+                        class="btn btn--touch hud__touch-btn hud__touch-btn--jump"
+                    >
+                        ▲ JUMP
+                    </button>
+                </div>
+            </footer>
+        </main>
+        <script type="module" src="./src/ts/main.ts"></script>
+    </body>
+</html>
