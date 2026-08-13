@@ -1,39 +1,12 @@
-import {
-    BASE_DT,
-    GROUND_Y,
-    MAX_OBSTACLES,
-    MAX_SCORE,
-    MAX_SPEED,
-    MILESTONE_INTERVAL,
-    SCORE_FACTOR,
-    SPEED_ACCELERATION,
-} from "@/ts/core/constants";
+import { GROUND_Y } from "@/ts/core/constants";
 import type { GameState, ISoundEffects } from "@/ts/core/types";
 import type { AudioManager } from "@/ts/audio";
-import {
-    createObstacle,
-    setPlayerDucking,
-    spawnParticlesInto,
-    triggerPlayerJump,
-    updateBackgroundDots,
-    updateObstaclesInPlace,
-    updateParticlesInPlace,
-    updatePlayerPhysics,
-} from "@/ts/entities";
-import {
-    drawBackground,
-    drawObstacle,
-    drawParticles,
-    drawPlayer,
-} from "@/ts/graphics";
-import { checkCollision } from "@/ts/physics";
-import type {
-    DomElements,
-    HudManager,
-    OverlayManager,
-    ScreenManager,
-} from "@/ts/ui";
+import { setPlayerDucking, spawnParticlesInto, triggerPlayerJump } from "@/ts/entities";
+import type { DomElements, HudManager, OverlayManager, ScreenManager } from "@/ts/ui";
 import { GameStateModel } from "@/ts/game/game-state";
+import { GameLoop, type IGameLoop } from "@/ts/game/game-loop";
+import { GameSimulation, type IGameSimulation } from "@/ts/game/game-simulation";
+import { GameRenderer, type IGameRenderer } from "@/ts/game/game-renderer";
 
 export interface GameEngineOptions {
     readonly dom: DomElements;
@@ -42,6 +15,10 @@ export interface GameEngineOptions {
     readonly screenManager: ScreenManager;
     readonly overlayManager: OverlayManager;
     readonly hudManager: HudManager;
+    readonly simulation?: IGameSimulation;
+    readonly renderer?: IGameRenderer;
+    readonly loop?: IGameLoop;
+    readonly state?: GameStateModel;
 }
 
 export class GameEngine {
@@ -52,11 +29,12 @@ export class GameEngine {
     private readonly overlayManager: OverlayManager;
     private readonly hudManager: HudManager;
 
-    private readonly state = new GameStateModel();
-    private lastTime = 0;
-    private animFrameId: number | null = null;
+    private readonly state: GameStateModel;
+    private readonly simulation: IGameSimulation;
+    private readonly renderer: IGameRenderer;
+    private readonly loop: IGameLoop;
+
     private exitTimeoutId: ReturnType<typeof setTimeout> | null = null;
-    private readonly boundVisibilityHandler: () => void;
 
     public constructor(options: GameEngineOptions) {
         this.dom = options.dom;
@@ -65,7 +43,27 @@ export class GameEngine {
         this.screenManager = options.screenManager;
         this.overlayManager = options.overlayManager;
         this.hudManager = options.hudManager;
-        this.boundVisibilityHandler = this.handleVisibilityChange.bind(this);
+
+        this.state = options.state ?? new GameStateModel();
+        this.simulation =
+            options.simulation ??
+            new GameSimulation(this.sfx, {
+                onGameOver: () => this.endGame(),
+            });
+        this.renderer =
+            options.renderer ??
+            new GameRenderer({
+                dom: this.dom,
+                hudManager: this.hudManager,
+            });
+        this.loop =
+            options.loop ??
+            new GameLoop({
+                onUpdate: (dt: number) => this.handleUpdate(dt),
+                onRender: () => this.handleRender(),
+                onVisibilityChange: (hidden: boolean) =>
+                    this.handleVisibilityChange(hidden),
+            });
     }
 
     public getGameState(): GameState {
@@ -140,7 +138,7 @@ export class GameEngine {
             this.sfx.playClick();
         } else if (this.state.gameState === "paused") {
             this.state.gameState = "playing";
-            this.lastTime = 0; // Reset timing baseline on resume
+            this.loop.resetTiming();
             this.overlayManager.setPauseVisible(false);
             this.sfx.playClick();
         }
@@ -192,71 +190,33 @@ export class GameEngine {
     }
 
     public startLoop(): void {
-        this.stopLoop();
-        document.addEventListener(
-            "visibilitychange",
-            this.boundVisibilityHandler,
-        );
-
-        const loop = (ts: number): void => {
-            if (!this.lastTime) this.lastTime = ts;
-            const rawDt = ts - this.lastTime;
-            // Clamp to prevent huge jumps after tab suspension
-            const dt = Math.min(rawDt, 50);
-            this.lastTime = ts;
-
-            if (
-                this.screenManager.getCurrentScreen() === "game" &&
-                this.state.gameState === "playing"
-            ) {
-                this.update(dt);
-            }
-
-            if (this.screenManager.getCurrentScreen() === "game") {
-                this.render();
-            }
-
-            this.animFrameId = requestAnimationFrame(loop);
-        };
-
-        this.animFrameId = requestAnimationFrame(loop);
+        this.loop.start();
     }
 
     public stopLoop(): void {
-        if (this.animFrameId !== null) {
-            cancelAnimationFrame(this.animFrameId);
-            this.animFrameId = null;
-        }
-        document.removeEventListener(
-            "visibilitychange",
-            this.boundVisibilityHandler,
-        );
+        this.loop.stop();
     }
 
     public destroy(): void {
-        this.stopLoop();
+        this.loop.destroy();
         if (this.exitTimeoutId !== null) {
             clearTimeout(this.exitTimeoutId);
             this.exitTimeoutId = null;
         }
     }
 
-    private handleVisibilityChange(): void {
-        if (document.hidden) {
-            // Pause gameplay when tab is hidden to prevent physics explosion
+    private handleVisibilityChange(hidden: boolean): void {
+        if (hidden) {
             if (this.state.gameState === "playing") {
                 this.state.gameState = "paused";
                 this.overlayManager.setPauseVisible(true);
             }
-            // Suspend audio to free resources
             const ctx = this.audio.getContext();
             if (ctx?.state === "running") {
                 void ctx.suspend();
             }
         } else {
-            // Reset timing baseline to avoid giant dt on resume
-            this.lastTime = 0;
-            // Resume audio if not muted
+            this.loop.resetTiming();
             if (!this.audio.getMuted()) {
                 const ctx = this.audio.getContext();
                 if (ctx?.state === "suspended") {
@@ -266,80 +226,18 @@ export class GameEngine {
         }
     }
 
-    private update(dt: number): void {
-        const k = dt / BASE_DT;
-        this.updateProgression(k);
-        this.updateSpawner(dt);
-        this.updateEntities(dt, k);
-        this.checkCollisions();
-    }
-
-    private updateProgression(k: number): void {
-        this.state.frame++;
-        this.state.score = Math.min(
-            MAX_SCORE,
-            this.state.score + k * (this.state.speed / 6) * SCORE_FACTOR,
-        );
-        this.state.speed = Math.min(
-            MAX_SPEED,
-            6 + this.state.score * SPEED_ACCELERATION,
-        );
-
-        const milestone = Math.floor(this.state.score / MILESTONE_INTERVAL);
-        if (milestone > this.state.lastMilestone) {
-            this.state.lastMilestone = milestone;
-            this.sfx.playMilestone();
+    private handleUpdate(dt: number): void {
+        if (
+            this.screenManager.getCurrentScreen() === "game" &&
+            this.state.gameState === "playing"
+        ) {
+            this.simulation.update(this.state, dt);
         }
     }
 
-    private updateSpawner(dt: number): void {
-        this.state.spawnTimer += dt;
-        if (this.state.spawnTimer > this.state.nextSpawn) {
-            this.state.spawnTimer = 0;
-            this.state.nextSpawn = Math.max(
-                600,
-                1250 - this.state.speed * 32 + Math.random() * 450,
-            );
-            // Enforce hard obstacle cap
-            if (this.state.obstacles.length < MAX_OBSTACLES) {
-                this.state.obstacles.push(createObstacle());
-            }
+    private handleRender(): void {
+        if (this.screenManager.getCurrentScreen() === "game") {
+            this.renderer.render(this.state);
         }
-    }
-
-    private updateEntities(dt: number, k: number): void {
-        updatePlayerPhysics(this.state.player, k);
-        updateObstaclesInPlace(this.state.obstacles, this.state.speed, k);
-        updateBackgroundDots(this.state.bgDots, this.state.speed, k);
-        updateParticlesInPlace(this.state.particles, dt, k);
-    }
-
-    private checkCollisions(): void {
-        for (const o of this.state.obstacles) {
-            if (checkCollision(this.state.player, o)) {
-                this.endGame();
-                break;
-            }
-        }
-    }
-
-    private render(): void {
-        const { ctx } = this.dom;
-        drawBackground(
-            ctx,
-            this.state.bgDots,
-            this.state.frame,
-            this.state.speed,
-        );
-        for (const obstacle of this.state.obstacles) {
-            drawObstacle(ctx, obstacle, this.state.frame);
-        }
-        drawParticles(ctx, this.state.particles);
-        drawPlayer(ctx, this.state.player, this.state.frame);
-        this.hudManager.updateStats(
-            this.state.score,
-            this.state.best,
-            this.state.speed,
-        );
     }
 }
