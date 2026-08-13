@@ -83,8 +83,6 @@ Want to tweak the game balance? All core parameters live in plain TypeScript con
 
 This project is licensed under the [MIT License](./LICENSE). Fork it, tweak the physics, beat the high score, and build something cool.
 
----
-
 <div align="center">
     <sub>Enjoying Arc Runner? A 🌟 on GitHub goes a long way.</sub>
 </div>

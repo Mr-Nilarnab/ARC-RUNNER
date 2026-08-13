@@ -30,10 +30,7 @@ export class GameSimulation implements IGameSimulation {
     private readonly sfx: ISoundEffects;
     private readonly callbacks: GameSimulationCallbacks;
 
-    public constructor(
-        sfx: ISoundEffects,
-        callbacks: GameSimulationCallbacks,
-    ) {
+    public constructor(sfx: ISoundEffects, callbacks: GameSimulationCallbacks) {
         this.sfx = sfx;
         this.callbacks = callbacks;
     }
@@ -52,10 +49,7 @@ export class GameSimulation implements IGameSimulation {
             MAX_SCORE,
             state.score + k * (state.speed / 6) * SCORE_FACTOR,
         );
-        state.speed = Math.min(
-            MAX_SPEED,
-            6 + state.score * SPEED_ACCELERATION,
-        );
+        state.speed = Math.min(MAX_SPEED, 6 + state.score * SPEED_ACCELERATION);
 
         const milestone = Math.floor(state.score / MILESTONE_INTERVAL);
         if (milestone > state.lastMilestone) {

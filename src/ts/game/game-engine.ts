@@ -1,11 +1,23 @@
 import { GROUND_Y } from "@/ts/core/constants";
 import type { GameState, ISoundEffects } from "@/ts/core/types";
 import type { AudioManager } from "@/ts/audio";
-import { setPlayerDucking, spawnParticlesInto, triggerPlayerJump } from "@/ts/entities";
-import type { DomElements, HudManager, OverlayManager, ScreenManager } from "@/ts/ui";
+import {
+    setPlayerDucking,
+    spawnParticlesInto,
+    triggerPlayerJump,
+} from "@/ts/entities";
+import type {
+    DomElements,
+    HudManager,
+    OverlayManager,
+    ScreenManager,
+} from "@/ts/ui";
 import { GameStateModel } from "@/ts/game/game-state";
 import { GameLoop, type IGameLoop } from "@/ts/game/game-loop";
-import { GameSimulation, type IGameSimulation } from "@/ts/game/game-simulation";
+import {
+    GameSimulation,
+    type IGameSimulation,
+} from "@/ts/game/game-simulation";
 import { GameRenderer, type IGameRenderer } from "@/ts/game/game-renderer";
 
 export interface GameEngineOptions {
