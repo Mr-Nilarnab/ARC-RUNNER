@@ -1,0 +1,40 @@
+.menu-screen__glyph {
+    font-size: 2.75rem;
+    color: var(--color-ember);
+    text-shadow: 0 0 20px var(--color-ember-glow);
+    margin-block-end: var(--space-1);
+    animation: corePulse 2.4s ease-in-out infinite;
+}
+
+.menu-screen__title {
+    font-family: var(--font-heading);
+    font-weight: 900;
+    letter-spacing: 3px;
+    font-size: var(--font-size-3xl);
+    text-transform: uppercase;
+    margin-block: var(--space-3) var(--space-1);
+}
+
+.menu-screen__title-accent {
+    color: var(--color-ember);
+    text-shadow: 0 0 14px var(--color-ember-glow);
+}
+
+.menu-screen__tag {
+    font-size: var(--font-size-sm);
+    letter-spacing: 4px;
+    color: var(--color-text-dim);
+    margin-block-end: var(--space-11);
+}
+
+.menu-screen__buttons {
+    display: flex;
+    gap: var(--space-6);
+    margin-block-end: var(--space-8);
+}
+
+.menu-screen__footer {
+    font-size: var(--font-size-xs);
+    letter-spacing: 1px;
+    color: var(--color-text-dim);
+}

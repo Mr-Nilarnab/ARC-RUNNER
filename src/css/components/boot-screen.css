@@ -1,0 +1,77 @@
+.boot-screen {
+    align-items: flex-start;
+}
+
+.boot-screen__log {
+    width: 100%;
+    max-width: 540px;
+    height: 130px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    overflow: hidden;
+    font-size: var(--font-size-base);
+    letter-spacing: 0.5px;
+    color: var(--color-amber);
+    margin-block-end: var(--space-8);
+    text-align: left;
+}
+
+.boot-screen__log > div,
+.boot-screen__log-entry {
+    opacity: 0;
+    animation: bootLineIn 0.25s ease forwards;
+}
+
+.boot-screen__progress {
+    width: 100%;
+    max-width: 540px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+}
+
+.boot-screen__bar {
+    flex: 1;
+    height: 8px;
+    background: var(--color-steel-dim);
+    border: 1px solid var(--color-steel);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.boot-screen__bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(
+        90deg,
+        var(--color-ember-dim),
+        var(--color-ember)
+    );
+    box-shadow: 0 0 10px rgba(255, 70, 32, 0.6);
+}
+
+.boot-screen__pct {
+    font-size: var(--font-size-base);
+    color: var(--color-ember-soft);
+    width: 42px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.boot-screen__skip {
+    margin-block-start: var(--space-7);
+    font-size: var(--font-size-xs);
+    letter-spacing: 2px;
+    color: var(--color-text-dim);
+    animation: blinkSkip 1.4s ease-in-out infinite;
+}
+
+.boot-screen__credit {
+    margin-block-start: var(--space-4);
+    font-size: var(--font-size-xs);
+    letter-spacing: 1.5px;
+    color: var(--color-ember-soft);
+    opacity: 0.75;
+}

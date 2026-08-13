@@ -1,0 +1,22 @@
+@media (max-width: 520px) {
+    .hud__title {
+        font-size: var(--font-size-base);
+    }
+
+    .hud__stats {
+        gap: var(--space-7);
+    }
+
+    .hud__stat-value {
+        font-size: var(--font-size-base);
+    }
+
+    .hud__controls-hint {
+        display: none;
+    }
+
+    .menu-screen__title,
+    .exit-screen__title {
+        font-size: var(--font-size-2xl);
+    }
+}

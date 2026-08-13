@@ -1,0 +1,65 @@
+:root {
+    /* Color Palette */
+    --color-void: #0b0907;
+    --color-panel: #15100d;
+    --color-panel-secondary: #1c1511;
+    --color-ember: #ff4620;
+    --color-ember-soft: #ff8752;
+    --color-ember-dim: #7a2410;
+    --color-amber: #ffb545;
+    --color-steel: #4a3f36;
+    --color-steel-dim: #241d18;
+    --color-text: #f2e6d3;
+    --color-text-dim: #8f7d6c;
+    --color-danger: #ff2b2b;
+    --color-overlay-bg: rgba(9, 7, 6, 0.85);
+
+    /* Alpha Glow Colors */
+    --color-ember-glow: rgba(255, 70, 32, 0.7);
+    --color-ember-glow-soft: rgba(255, 70, 32, 0.25);
+    --color-amber-glow: rgba(255, 181, 69, 0.5);
+    --color-hit-flash: rgba(255, 43, 43, 0.55);
+
+    /* Typography */
+    --font-mono: "Consolas", "SF Mono", "Roboto Mono", monospace;
+    --font-heading:
+        Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-size-xs: 0.625rem; /* 10px */
+    --font-size-sm: 0.6875rem; /* 11px */
+    --font-size-base: 0.75rem; /* 12px */
+    --font-size-md: 0.8125rem; /* 13px */
+    --font-size-lg: 1.0625rem; /* 17px */
+    --font-size-xl: 1.25rem; /* 20px */
+    --font-size-2xl: 1.375rem; /* 22px */
+    --font-size-3xl: 1.875rem; /* 30px */
+
+    /* Spacing Grid (4px/8px base) */
+    --space-1: 0.125rem; /* 2px */
+    --space-2: 0.25rem; /* 4px */
+    --space-3: 0.375rem; /* 6px */
+    --space-4: 0.5rem; /* 8px */
+    --space-5: 0.625rem; /* 10px */
+    --space-6: 0.75rem; /* 12px */
+    --space-7: 0.875rem; /* 14px */
+    --space-8: 1rem; /* 16px */
+    --space-9: 1.125rem; /* 18px */
+    --space-10: 1.25rem; /* 20px */
+    --space-11: 1.375rem; /* 22px */
+    --space-12: 1.625rem; /* 26px */
+
+    /* Radii & Borders */
+    --radius-sm: 2px;
+    --radius-md: 3px;
+    --radius-lg: 6px;
+
+    /* Z-Index Scale */
+    --z-screens: 1;
+    --z-overlay: 5;
+    --z-hit-flash: 10;
+    --z-corners: 15;
+    --z-crt-grid: 25;
+    --z-scanline: 30;
+
+    /* Transitions */
+    --transition-fast: 0.15s ease-in-out;
+}

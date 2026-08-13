@@ -1,0 +1,125 @@
+.hud {
+    display: flex;
+}
+
+.hud__top {
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-block: var(--space-1) var(--space-6);
+    padding-inline: var(--space-2);
+    border-bottom: 1px solid var(--color-steel-dim);
+    margin-block-end: var(--space-5);
+}
+
+.hud__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-weight: 900;
+    letter-spacing: 3px;
+    font-size: var(--font-size-xl);
+    color: var(--color-text);
+    text-transform: uppercase;
+    line-height: 1;
+}
+
+.hud__title-accent {
+    color: var(--color-ember);
+    text-shadow: 0 0 12px var(--color-ember-glow);
+}
+
+.hud__stats {
+    display: flex;
+    gap: var(--space-11);
+}
+
+.hud__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    line-height: 1.1;
+}
+
+.hud__stat-label {
+    font-size: var(--font-size-xs);
+    letter-spacing: 2px;
+    color: var(--color-text-dim);
+}
+
+.hud__stat-value {
+    font-size: var(--font-size-lg);
+    color: var(--color-amber);
+    text-shadow: 0 0 8px var(--color-amber-glow);
+    font-variant-numeric: tabular-nums;
+}
+
+.hud__stat--game-only {
+    display: none;
+}
+
+.hud__top--in-game .hud__stat--game-only {
+    display: flex;
+}
+
+.hud__stat--audio-toggle {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-family: inherit;
+    color: inherit;
+    cursor: pointer;
+    text-align: right;
+}
+
+.hud__stat--audio-toggle:hover .hud__stat-value {
+    text-shadow: 0 0 14px rgba(255, 181, 69, 0.9);
+}
+
+.hud__stat--audio-toggle:focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 4px;
+    border-radius: var(--radius-sm);
+}
+
+.hud__bottom {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: var(--space-5) var(--space-1);
+    padding-inline: var(--space-2);
+    gap: var(--space-5);
+    flex-wrap: wrap;
+}
+
+.hud__bottom--show {
+    display: flex;
+}
+
+.hud__controls-hint {
+    font-size: var(--font-size-sm);
+    letter-spacing: 1px;
+    color: var(--color-text-dim);
+}
+
+.hud__touch-controls {
+    display: flex;
+    gap: var(--space-4);
+}
+
+.hud__touch-btn {
+    background: var(--color-steel-dim);
+    color: var(--color-text);
+    border: 1px solid var(--color-steel);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: var(--font-size-sm);
+    letter-spacing: 1px;
+    padding-block: var(--space-4);
+    padding-inline: var(--space-7);
+    cursor: pointer;
+}
+
+.hud__touch-btn:active {
+    background: var(--color-ember-dim);
+    color: var(--color-text);
+    border-color: var(--color-ember);
+}
