@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./public/arcRunner.png" alt="Arc Runner In-Game Preview" />
+    <img src="./public/arcRunner.webp" alt="Arc Runner In-Game Preview" />
     <h1 align="center">
         Arc Runner
     </h1>
@@ -47,7 +47,7 @@ Your internet drops. Chrome hands you a cute little cactus-hopping dinosaur. But
 3. Open `http://localhost:3000` in your browser.
 4. Press `SPACE` to initiate boot diagnostics and start your run.
 
-**Production Build:** `bun run build && bun run postBuild`
+**Production Build:** `bun run build`
 
 ## 🕹️ Controls
 
@@ -86,5 +86,5 @@ This project is licensed under the [MIT License](./LICENSE). Fork it, tweak the 
 ---
 
 <div align="center">
-    <sub>Enjoying Arc Runner? A ⭐ on GitHub goes a long way.</sub>
+    <sub>Enjoying Arc Runner? A 🌟 on GitHub goes a long way.</sub>
 </div>

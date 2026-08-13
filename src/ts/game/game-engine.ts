@@ -1,6 +1,8 @@
 import {
     BASE_DT,
     GROUND_Y,
+    MAX_OBSTACLES,
+    MAX_SCORE,
     MAX_SPEED,
     MILESTONE_INTERVAL,
     SCORE_FACTOR,
@@ -53,6 +55,8 @@ export class GameEngine {
     private readonly state = new GameStateModel();
     private lastTime = 0;
     private animFrameId: number | null = null;
+    private exitTimeoutId: ReturnType<typeof setTimeout> | null = null;
+    private readonly boundVisibilityHandler: () => void;
 
     public constructor(options: GameEngineOptions) {
         this.dom = options.dom;
@@ -61,6 +65,7 @@ export class GameEngine {
         this.screenManager = options.screenManager;
         this.overlayManager = options.overlayManager;
         this.hudManager = options.hudManager;
+        this.boundVisibilityHandler = this.handleVisibilityChange.bind(this);
     }
 
     public getGameState(): GameState {
@@ -115,11 +120,15 @@ export class GameEngine {
         this.audio.ensureAudio();
         this.sfx.playClick();
         this.screenManager.showScreen("exit");
-        setTimeout(() => {
+        if (this.exitTimeoutId !== null) {
+            clearTimeout(this.exitTimeoutId);
+        }
+        this.exitTimeoutId = setTimeout(() => {
+            this.exitTimeoutId = null;
             try {
                 window.close();
-            } catch (err: unknown) {
-                console.warn("Window close restricted:", err);
+            } catch {
+                /* browser may restrict window.close() */
             }
         }, 300);
     }
@@ -131,6 +140,7 @@ export class GameEngine {
             this.sfx.playClick();
         } else if (this.state.gameState === "paused") {
             this.state.gameState = "playing";
+            this.lastTime = 0; // Reset timing baseline on resume
             this.overlayManager.setPauseVisible(false);
             this.sfx.playClick();
         }
@@ -183,10 +193,16 @@ export class GameEngine {
 
     public startLoop(): void {
         this.stopLoop();
+        document.addEventListener(
+            "visibilitychange",
+            this.boundVisibilityHandler,
+        );
 
         const loop = (ts: number): void => {
             if (!this.lastTime) this.lastTime = ts;
-            const dt = Math.min(ts - this.lastTime, 50);
+            const rawDt = ts - this.lastTime;
+            // Clamp to prevent huge jumps after tab suspension
+            const dt = Math.min(rawDt, 50);
             this.lastTime = ts;
 
             if (
@@ -211,20 +227,59 @@ export class GameEngine {
             cancelAnimationFrame(this.animFrameId);
             this.animFrameId = null;
         }
+        document.removeEventListener(
+            "visibilitychange",
+            this.boundVisibilityHandler,
+        );
+    }
+
+    public destroy(): void {
+        this.stopLoop();
+        if (this.exitTimeoutId !== null) {
+            clearTimeout(this.exitTimeoutId);
+            this.exitTimeoutId = null;
+        }
+    }
+
+    private handleVisibilityChange(): void {
+        if (document.hidden) {
+            // Pause gameplay when tab is hidden to prevent physics explosion
+            if (this.state.gameState === "playing") {
+                this.state.gameState = "paused";
+                this.overlayManager.setPauseVisible(true);
+            }
+            // Suspend audio to free resources
+            const ctx = this.audio.getContext();
+            if (ctx?.state === "running") {
+                void ctx.suspend();
+            }
+        } else {
+            // Reset timing baseline to avoid giant dt on resume
+            this.lastTime = 0;
+            // Resume audio if not muted
+            if (!this.audio.getMuted()) {
+                const ctx = this.audio.getContext();
+                if (ctx?.state === "suspended") {
+                    void ctx.resume();
+                }
+            }
+        }
     }
 
     private update(dt: number): void {
         const k = dt / BASE_DT;
-        this.updateProgression(dt, k);
+        this.updateProgression(k);
         this.updateSpawner(dt);
         this.updateEntities(dt, k);
         this.checkCollisions();
     }
 
-    private updateProgression(dt: number, k: number): void {
-        void dt;
+    private updateProgression(k: number): void {
         this.state.frame++;
-        this.state.score += k * (this.state.speed / 6) * SCORE_FACTOR;
+        this.state.score = Math.min(
+            MAX_SCORE,
+            this.state.score + k * (this.state.speed / 6) * SCORE_FACTOR,
+        );
         this.state.speed = Math.min(
             MAX_SPEED,
             6 + this.state.score * SPEED_ACCELERATION,
@@ -245,7 +300,10 @@ export class GameEngine {
                 600,
                 1250 - this.state.speed * 32 + Math.random() * 450,
             );
-            this.state.obstacles.push(createObstacle());
+            // Enforce hard obstacle cap
+            if (this.state.obstacles.length < MAX_OBSTACLES) {
+                this.state.obstacles.push(createObstacle());
+            }
         }
     }
 

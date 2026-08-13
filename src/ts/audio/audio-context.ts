@@ -41,4 +41,16 @@ export class AudioManager {
         this.isMuted = !this.isMuted;
         return this.isMuted;
     }
+
+    public suspend(): void {
+        if (this.ctx?.state === "running") {
+            void this.ctx.suspend();
+        }
+    }
+
+    public resume(): void {
+        if (this.ctx?.state === "suspended") {
+            void this.ctx.resume();
+        }
+    }
 }

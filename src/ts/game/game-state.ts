@@ -8,6 +8,13 @@ import type {
 import { INITIAL_SPEED } from "@/ts/core/constants";
 import { createBackgroundDots, createPlayer } from "@/ts/entities";
 
+const VALID_GAME_STATES: ReadonlySet<GameState> = new Set([
+    "ready",
+    "playing",
+    "paused",
+    "gameover",
+]);
+
 export class GameStateModel {
     public player: Player = createPlayer();
     public obstacles: Obstacle[] = [];
@@ -21,12 +28,22 @@ export class GameStateModel {
     public lastMilestone = 0;
     public spawnTimer = 0;
     public nextSpawn = 1000;
-    public gameState: GameState = "ready";
+
+    private _gameState: GameState = "ready";
+
+    public get gameState(): GameState {
+        return this._gameState;
+    }
+
+    public set gameState(value: GameState) {
+        if (!VALID_GAME_STATES.has(value)) return;
+        this._gameState = value;
+    }
 
     public reset(): void {
         this.player = createPlayer();
-        this.obstacles = [];
-        this.particles = [];
+        this.obstacles.length = 0;
+        this.particles.length = 0;
         this.score = 0;
         this.speed = INITIAL_SPEED;
         this.spawnTimer = 0;

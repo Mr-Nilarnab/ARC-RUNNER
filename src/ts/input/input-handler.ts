@@ -49,6 +49,7 @@ export class InputHandler {
         this.bindViewport(signal);
         this.bindTouchControls(signal);
         this.bindActionButtons(signal);
+        this.bindSafetyHandlers(signal);
     }
 
     public unbind(): void {
@@ -139,11 +140,8 @@ export class InputHandler {
             this.gameEngine.jump();
         };
 
-        this.dom.viewport.addEventListener("mousedown", handlePointer, {
-            signal,
-        });
-        this.dom.viewport.addEventListener("touchstart", handlePointer, {
-            passive: true,
+        // Use pointerdown for unified mouse+touch handling
+        this.dom.viewport.addEventListener("pointerdown", handlePointer, {
             signal,
         });
     }
@@ -159,40 +157,46 @@ export class InputHandler {
             { signal },
         );
 
+        // Duck: use pointer events for unified mouse+touch
         duckBtn.addEventListener(
-            "touchstart",
-            (e: TouchEvent) => {
+            "pointerdown",
+            (e: PointerEvent) => {
                 e.preventDefault();
-                this.gameEngine.setDuck(true);
-            },
-            { passive: false, signal },
-        );
-
-        duckBtn.addEventListener(
-            "touchend",
-            (e: TouchEvent) => {
-                e.preventDefault();
-                this.gameEngine.setDuck(false);
-            },
-            { passive: false, signal },
-        );
-
-        duckBtn.addEventListener(
-            "mousedown",
-            () => {
                 this.gameEngine.setDuck(true);
             },
             { signal },
         );
+
         duckBtn.addEventListener(
-            "mouseup",
+            "pointerup",
             () => {
                 this.gameEngine.setDuck(false);
             },
             { signal },
         );
+
+        // Handle cancellation paths to prevent stuck duck state
         duckBtn.addEventListener(
-            "mouseleave",
+            "pointercancel",
+            () => {
+                this.gameEngine.setDuck(false);
+            },
+            { signal },
+        );
+
+        duckBtn.addEventListener(
+            "pointerleave",
+            () => {
+                this.gameEngine.setDuck(false);
+            },
+            { signal },
+        );
+    }
+
+    /** Release stuck input state on blur/focus loss */
+    private bindSafetyHandlers(signal: AbortSignal): void {
+        window.addEventListener(
+            "blur",
             () => {
                 this.gameEngine.setDuck(false);
             },

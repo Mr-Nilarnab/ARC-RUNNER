@@ -25,7 +25,7 @@ export function updatePlayerPhysics(player: Player, k: number): void {
         player.vy += GRAVITY * k;
         player.y += player.vy * k;
         const groundThreshold = GROUND_Y - PLAYER_STAND_HEIGHT;
-        if (player.y >= groundThreshold) {
+        if (player.y >= groundThreshold || !Number.isFinite(player.y)) {
             player.y = groundThreshold;
             player.jumping = false;
             player.vy = 0;

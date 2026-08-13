@@ -1,9 +1,11 @@
 import type { BeepOptions } from "@/ts/core/types/audio.types";
 import type { AudioManager } from "@/ts/audio/audio-context";
+import { MAX_AUDIO_VOICES } from "@/ts/core/constants/game.constants";
 
 export class AudioSynthesizer {
     private cachedNoiseBuffer: AudioBuffer | null = null;
     private cachedSampleRate = 0;
+    private activeVoices = 0;
 
     public constructor(private readonly audioManager: AudioManager) {}
 
@@ -11,6 +13,7 @@ export class AudioSynthesizer {
         if (this.audioManager.getMuted()) return;
         const ctx = this.audioManager.getContext();
         if (!ctx) return;
+        if (this.activeVoices >= MAX_AUDIO_VOICES) return;
 
         const freq = opts.freq ?? 440;
         const duration = opts.duration ?? 0.1;
@@ -38,9 +41,11 @@ export class AudioSynthesizer {
 
         osc.connect(gain).connect(ctx.destination);
 
+        this.activeVoices++;
         osc.onended = (): void => {
             osc.disconnect();
             gain.disconnect();
+            this.activeVoices = Math.max(0, this.activeVoices - 1);
         };
 
         osc.start(t0);
@@ -51,6 +56,7 @@ export class AudioSynthesizer {
         if (this.audioManager.getMuted()) return;
         const ctx = this.audioManager.getContext();
         if (!ctx) return;
+        if (this.activeVoices >= MAX_AUDIO_VOICES) return;
 
         const buffer = this.getOrCreateNoiseBuffer(ctx);
         const src = ctx.createBufferSource();
@@ -69,10 +75,12 @@ export class AudioSynthesizer {
 
         src.connect(filter).connect(gain).connect(ctx.destination);
 
+        this.activeVoices++;
         src.onended = (): void => {
             src.disconnect();
             filter.disconnect();
             gain.disconnect();
+            this.activeVoices = Math.max(0, this.activeVoices - 1);
         };
 
         src.start();

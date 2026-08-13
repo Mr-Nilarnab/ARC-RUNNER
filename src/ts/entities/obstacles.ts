@@ -40,18 +40,3 @@ export function updateObstaclesInPlace(
     }
     obstacles.length = activeCount;
 }
-
-export function updateObstacles(
-    obstacles: ReadonlyArray<Obstacle>,
-    speed: number,
-    k: number,
-): Obstacle[] {
-    const nextList: Obstacle[] = [];
-    for (const o of obstacles) {
-        o.x -= speed * k;
-        if (o.x + o.w > -20) {
-            nextList.push(o);
-        }
-    }
-    return nextList;
-}

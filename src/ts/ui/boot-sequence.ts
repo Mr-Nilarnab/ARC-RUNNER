@@ -1,6 +1,7 @@
 import {
     BOOT_DURATION_MS,
     BOOT_LINES,
+    MAX_BOOT_LOG_LINES,
 } from "@/ts/core/constants/game.constants";
 import type { ISoundEffects } from "@/ts/core/types/audio.types";
 import type { DomElements } from "@/ts/ui/dom-elements";
@@ -123,10 +124,15 @@ export class BootSequence {
     }
 
     private addBootLine(text: string): void {
+        const { bootLog } = this.dom;
+        // Cap DOM growth: remove oldest lines if exceeding limit
+        while (bootLog.childElementCount >= MAX_BOOT_LOG_LINES) {
+            bootLog.firstChild?.remove();
+        }
         const div = document.createElement("div");
         div.className = "boot-screen__log-entry";
         div.textContent = `> ${text}`;
-        this.dom.bootLog.appendChild(div);
+        bootLog.appendChild(div);
         this.sfx.playBootBeep();
     }
 }

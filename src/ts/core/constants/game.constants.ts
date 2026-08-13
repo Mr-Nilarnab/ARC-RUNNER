@@ -30,3 +30,12 @@ export const PLAYER_DUCK_OFFSET_X = 8;
 
 export const BG_DOTS_COUNT = 40;
 export const MILESTONE_INTERVAL = 500;
+
+export const MAX_OBSTACLES = 12;
+export const MAX_PARTICLES = 120;
+export const MAX_AUDIO_VOICES = 8;
+export const MAX_BOOT_LOG_LINES = 10;
+export const MAX_DT_MS = 50;
+export const MAX_SCORE = 999999;
+export const MAX_SPAWN_TIMER = 5000;
+export const DPR_CAP = 3;
